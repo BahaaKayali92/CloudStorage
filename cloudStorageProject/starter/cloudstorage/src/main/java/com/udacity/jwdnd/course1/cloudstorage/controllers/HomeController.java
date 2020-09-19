@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.servlet.view.RedirectView;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -63,8 +65,13 @@ public class HomeController {
 
     @GetMapping("/home/delete")
     public String deleteFile(@RequestParam("id") Integer id) {
-        fileService.deleteFile(id);
-        return "redirect:/home";
+        try {
+            fileService.deleteFile(id);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "redirect:/result/error";
+        }
+        return "redirect:/result/success";
     }
 
     @GetMapping("/home/view")
@@ -90,49 +97,77 @@ public class HomeController {
 
     @PostMapping("/home/fileUpload")
     public String fileUpload(@RequestParam("fileUpload") MultipartFile file, Authentication authentication) {
-        if (file != null && !file.isEmpty()) {
-            User user = userService.getUser(authentication.getName());
-            fileService.uploadFile(file, user.getUserid());
+        if (file != null && !file.isEmpty() && !fileService.isFilenameExist(file.getOriginalFilename())) {
+            try {
+                User user = userService.getUser(authentication.getName());
+                fileService.uploadFile(file, user.getUserid());
+            } catch (Exception e) {
+                e.printStackTrace();
+                return "redirect:/result/error";
+            }
+        } else {
+            return "redirect:/result/validation/file/error";
         }
 
-        return "redirect:/home";
+        return "redirect:/result/success";
     }
 
     @PostMapping("/home/saveNote")
     public String saveNote(Authentication authentication, Note note) {
-        User user = userService.getUser(authentication.getName());
-        Integer userid = user.getUserid();
-        if (note.getNoteid() == null) {
-            note.setUserid(userid);
-            noteService.saveNote(note);
-        } else {
-            noteService.updateNote(note);
+        try {
+            User user = userService.getUser(authentication.getName());
+            Integer userid = user.getUserid();
+            if (note.getNoteid() == null) {
+                note.setUserid(userid);
+                noteService.saveNote(note);
+            } else {
+                noteService.updateNote(note);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "redirect:/result/error";
         }
-        return "redirect:/home";
+
+        return "redirect:/result/success";
     }
 
     @GetMapping("/home/deleteNote")
     public String deleteNote(@RequestParam("id") Integer id) {
-        noteService.deleteNote(id);
-        return "redirect:/home";
+        try {
+            noteService.deleteNote(id);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "redirect:/result/error";
+        }
+        return "redirect:/result/success";
     }
 
     @PostMapping("/home/saveCredential")
     public String saveCredential(Authentication authentication, Credential credential) {
-        User user = userService.getUser(authentication.getName());
-        Integer userid = user.getUserid();
-        credential.setUserid(userid);
-        if (credential.getCredentialid() == null) {
-            credentialService.saveCredential(credential);
-        } else {
-            credentialService.updateCredential(credential);
+        try {
+            User user = userService.getUser(authentication.getName());
+            Integer userid = user.getUserid();
+            credential.setUserid(userid);
+            if (credential.getCredentialid() == null) {
+                credentialService.saveCredential(credential);
+            } else {
+                credentialService.updateCredential(credential);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "redirect:/result/error";
         }
-        return "redirect:/home";
+        return "redirect:/result/success";
     }
 
     @GetMapping("/home/deleteCredential")
     public String deleteCredential(@RequestParam("id") Integer id) {
-        credentialService.deleteCredential(id);
-        return "redirect:/home";
+        try {
+            credentialService.deleteCredential(id);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "redirect:/result/error";
+        }
+        return "redirect:/result/success";
     }
 }

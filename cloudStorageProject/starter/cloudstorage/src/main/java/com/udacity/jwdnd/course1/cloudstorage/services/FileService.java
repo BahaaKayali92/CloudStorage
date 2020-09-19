@@ -51,4 +51,8 @@ public class FileService {
     public String getDataDirectory() {
         return uploadDir + File.separator;
     }
+
+    public boolean isFilenameExist(String filename) {
+        return fileMapper.getFileByFilename(filename).length > 0;
+    }
 }
